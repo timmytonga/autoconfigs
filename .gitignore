@@ -1,0 +1,7 @@
+.idea
+wandb
+.idea/*
+__pycache__
+*.ipynb*
+.DS_Store
+.*.py
