@@ -7,4 +7,3 @@ To change a config from a standard attribute to an Arg that is visible the Argpa
 ## Configs organization
 While all the configs are placed in 1 folder here, when integrating this repo to your code, the config files 
 can be placed near the corresponding classes for ease of management.
-

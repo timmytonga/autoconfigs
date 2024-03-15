@@ -2,15 +2,16 @@
 - **Dynamic nested configs**. Separate things should be separate. Related things should be together.
   - Dynamically add children args when certain args are added to avoid namespace cluttering/collision and management.
   - Configs for a certain class are easy to locate (file-naming).
-  - Only expose relevant variables (compartmentalization).
   - Highly modular (easy to add/remove) -- utilize OOP.
-- **Good and dynamic defaults** that select the best possible configurations possible and are dynamic depending on the task.
-  - New users should not need to learn the full possible config set but can explore them slowly 1-by-1 from simple to more advanced.
-  - Defaults should already be pretty good and should adapt to users' previous selection.
-- **Developer/IDE friendly**. Configs names and types are visible to the IDE (which wasn't the case with standard argparse) 
+- **Dynamic defaults** that select the best possible configurations possible and are dynamic depending on the task.
+  - Defaults should already be pretty good and should adapt to users' previous selection (e.g. default model changes from ResNet50 to BERT when the user change the dataset from ImageNet to IMDB).
+- **Developer/IDE friendly**. Configs names and types are visible to the IDE (which wasn't the case with standard argparse)
+  - **Easy refactoring**. Since configs names are visible, refactoring (renaming, moving, etc.) can utilize IDE (like Pycharm) tools.
+  - **Less mistyping**. Since the IDE can check for the type and name  of the config.
 - **User friendly**. Easy to see all available configs, which are grouped and ordered according to their definition and parse ordering. Show help and defaults for all configs. 
   - **Generous error checking**. Built-in constraint and dependencies checking across multiple steps to minimize error. 
   - **Nice printing**. Print configs nicely by group.
+  - **Compartmenalization**. Only expose relevant variables to the CLI. Nested structure helps prevent name collisions.
 
 TODO:
 - Automatically generate step-by-step GUI. 
@@ -59,12 +60,12 @@ class LoggingConfig:
 ```python
 @dataclass
 class LoggingConfig(ArgsGroup):
-    parent: ArgsGroup
 
     def __post_init__(self):
-        ArgsGroup.__init__(self, "logging", "Logging related configs", parent=self.parent) 
+        ArgsGroup.__init__(self, name="logging", description="Logging related configs") 
         # define optional children configs below
-        self.child_configs = ChildConfig(parent=self)  # this is another ArgsGroup
+        # this is another ArgsGroup which will automatically be parsed when included in the parent ArgsGroup
+        self.child_configs: ArgsGroup = ChildConfig()  
 
          
     # configs and args below
@@ -120,7 +121,7 @@ These defaults are used for the Arg whenever users do not explicit specify their
 These are similar to argparse.ArgumentParser's defaults. We set the `default` attribute to the default value in this case.
 
 ### Dynamic defaults
-NOTE: If user sets some flag explicitly, this default is overidden by the user's value.
+NOTE: The override ordering is always user_input > dynamic_defaults > standard_defaults.
 
 Dynamic defaults are defaults that are set depending on the value of another arg. 
 For example, the default value for n_epochs might differ whether we are training on MNIST (50k examples) or The Pile (billions of tokens).
@@ -257,7 +258,7 @@ TODO:
 
     
 # Example of adding an ArgsGroup that is generated dynamically
-Suppose we start with this
+Suppose we start with a standard "Configs as dataclass" construction:
 ```python
 @dataclass
 class GPTBaseConfigs:
